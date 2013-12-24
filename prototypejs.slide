@@ -1,0 +1,146 @@
+JS プロトタイプベースオブジェクト指向の有用性について
+あるいはプロトタイプ指向プログラミングのすすめ ITCFes2013 冬の陣
+22 Dec 2013
+
+MURAOKA Yusuke
+@jbking
+yusuke@jbking.org
+
+* 次第
+
+- アンケート
+- お前誰よ？
+- 基本
+- 応用
+
+* アンケート
+
+* コード書いてますか？
+
+* 技術好きですか？
+
+* 外部の勉強会でてますか？
+
+* 本編には関係ありません :-p
+
+* お前誰よ？
+
+.image images/author.jpg 180 270
+
+- MURAOKA Yusuke @jbking
+- 東毛にいるプログラマ
+- フリーランサー
+- 外貨獲得クラスタ
+- ネイティブグンマー
+- OpenStack, TCP/IP, WEBアプリケーション
+- Python, JS, Go
+- CoqとかAlloy勉強中
+
+* 紹介者
+
+.image images/introducer.jpg 310 534
+
+* JSのはなし
+
+* 基本
+
+* プロパティ
+
+プロパティは *関連* である
+
+.image images/property_diag.png
+
+  > o1.p = o2;
+  > o1.p === o2;
+  true
+
+* prototype
+
+prototypeはプロパティの参照が行われる *関連* である
+
+.image images/prototype_diag.png
+
+  > o1 = Object.create(p1);
+  > o1.foo; // p1.foo
+  "foo"
+  > o1.bar; // o1.bar
+  "qux"
+  > Object.getPrototypeOf(o1) === p1;
+  true
+
+* 状態の共有
+
+prototypeはチェーンにできる
+
+.image images/prototype_chain_diag.png 338 330
+
+  > o1.foo; // gp1.foo
+  "foo"
+  > o2.baz; // p1.baz 
+  "qux"
+  > o3.baz; // p1.baz 
+  "qux"
+
+* コンテキストthis
+
+関数のコンテキストを変えてメソッドのように扱える
+
+  > o = {};
+  {}
+  > function f() { console.log(this === o); };
+  > f(); // この呼び出しでのthisはwindow/globalになる
+  false
+  > f.apply(o); // or f.call(o);
+  true
+  > o.f = f;
+  > o.f();
+  true
+
+* 応用
+
+* の前に
+
+* 仮定
+
+こういうプロパティデスクリプタの拡張がある
+
+.image images/event_diag.png
+
+  > target = function () { console.log('foo is changed'); };
+  > o1.on('change:foo', target);
+  > o1.foo = 'bar'; // Setterが起動
+  foo is changed
+
+- jQueryイベントシステムのようなもので値の変更を検知してイベントを発行する
+
+* traitのようなもの
+
+.image images/trait_like_diag.png
+
+- child1/2それぞれのオブジェクトローカルな独立したスコープでメソッドを呼ぶことで影響範囲を狭める
+- orig1に伝播させたいプロパティの変更はchild1/2でSetterとして用意する
+- 個別にchildへ関連する同名のメソッドが存在しても問題ない
+
+* mvcc
+
+.image images/mvcc_diag.png
+
+- BASEとHEADまでをまとめることでコンパクションできる
+
+* イベント変換器
+
+.image images/event_translator_diag.png
+
+- フィルターパターン
+- どこかにFSM仕込むとモード切り替えできる変換器になる
+
+* まとめのような
+
+- オブジェクトが対等なので構造を柔軟に設計できる
+- prototypeは使いよう
+
+* 参考
+
+- BeautifulProperties.js [[https://github.com/monjudoh/BeautifulProperties.js]]
+- BeautifulFSM.js [[https://github.com/jbking/BeautifulFSM.js]]
+- BeautifulExchanger.js [[https://github.com/jbking/BeautifulExchanger.js]]
